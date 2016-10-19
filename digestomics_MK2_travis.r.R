@@ -128,41 +128,6 @@ loadHumanFile <- function(sHumanFilename = "")
 	return(dfHuman)
 }
 
-#prepareSpeciesMap <- function(dfUnknown, sName)
-#{
-#	lSpecies <- list()
-#	lSpecies$name <- sName
-#	dfUnknown <- dfUnknown[order(dfUnknown$start),]
-#	dfUnknown <- dfUnknown[order(dfUnknown$chrom),]
-#	dfUnknown <- dfUnknown[order(suppressWarnings(as.numeric(dfUnknown$chrom))),]	
-#	
-#	lSpecies$protSeq <- paste(dfUnknown$seq, collapse = '', sep = '')
-#	vPepLengths <- nchar(dfUnknown$seq)
-#	
-#	vIndex <- 1
-#	vStartIndices <- vector(mode = "double", length = length(vPepLengths))
-#	map <- vector(mode = "integer", length = nchar(lSpecies$protSeq))
-#	
-#	for (i in 1:length(vPepLengths))
-#	{
-#		vStartIndices[i] <- vIndex
-#		vIndex <- vIndex + vPepLengths[i]
-#	}
-#	
-#	for (i in 1:length(vPepLengths))
-#	{	
-#		endIndex <- vStartIndices[i] + vPepLengths[i] - 1
-#		map[vStartIndices[i]:endIndex] <- i
-#	}
-#	rm(vStartIndices)
-#	lSpecies$map <- map
-#	lSpecies$genes <- dfUnknown$GeneName
-#	lSpecies$chromes <- dfUnknown$chrom
-#	lSpecies$startLoc <- dfUnknown$start
-#	lSpecies$endLoc <- dfUnknown$end
-#	lSpecies$lCoincidenceMaps <- list()	
-#	return(lSpecies)
-#}
 
 prepareReverseSeqSpeciesMap <- function(dfUnknown, sName)
 {
@@ -355,27 +320,6 @@ mapPeptidesPerGenotype <- function(pep, seq, genotype, mapLength)
 }
 
 
-#   user  system elapsed 
-#  2243.72  304.58 2549.42
-#mapPeptidesPerGenotype <- function(pep, seq, genotype, mapLength)
-#{
-#	incidence <- vector(mode = "integer", length = mapLength)
-#	mascot <- vector(mode = "integer", length = mapLength)
-#	iFound <- 0
-#	
-#	for (i in 1:length(pep))	
-#	{
-#		iFound <- length(which(pep[[i]]$sample == genotype))
-#		if (iFound > 0)
-#		{
-#			incidence <- pepMapToSeq(names(pep)[i], iFound, seq, incidence)
-#			mascot <- pepMapToSeqMascot(names(pep)[i], max(pep[[i]]$mScore), seq, mascot)
-#		}
-#	}
-#	return(map <- data.frame(incidence, mascot))
-#}
-
-
 mapGenotypes <- function(pep, lSpecies, uGenotypes)
 {
 	lGenotypes <- vector(mode = "list", length = length(uGenotypes))
@@ -427,24 +371,6 @@ getIncidentPeptidesPerSnippet <- function (pep, seq, genotype)
 	return(dfPeptides)
 }
 
-# debug code for getIncidentPeptidesPerSnippet
-#iFound <- F
-#i <- i + 1
-#while (iFound < 1 || (!bStop))
-#{
-#	iFound <- length(which(pep[[i]]$sample == genotype))
-#	if (iFound > 0)
-#	{
-#		vIndices <- gregexpr(names(pep)[i], seq, fixed = TRUE)[[1]]
-#		bStop <- (vIndices[1] > 0)
-#	}
-#	i <- i + 1
-#}
-#i <- i - 1
-#vIndices <- gregexpr(names(pep)[i], seq, fixed = TRUE)[[1]]
-#vIndices
-#iFound
-#i
 
 ## call to generate list of peptides that map to sequence snippet
 getSnippetPeptideList <- function(pep, lSpecies, uGenotypes)
@@ -462,43 +388,6 @@ getSnippetPeptideList <- function(pep, lSpecies, uGenotypes)
 	
 	return(lGenotypes)
 }
-
-
-
-## Timing
-##   user  system elapsed 
-## 478.11  241.35  719.81 
-#calculateScoresPerGene <- function(lSpecies, bIncludeMascot = FALSE)
-#{
-#	numMaps <- length(lSpecies$lCoincidenceMaps)
-#	
-#	if (bIncludeMascot)
-#	{
-#		for (iGene in 1:length(lSpecies$genes))
-#		{
-#			indices <- which(lSpecies$map == iGene)
-#			
-#			for (iMap in 1:numMaps)
-#			{
-#				lSpecies$lCoincidenceMaps[[iMap]][["coincidenceScore"]][iGene] <- mean(lSpecies$lCoincidenceMaps[[iMap]][["map"]]$incidence[indices])
-#				lSpecies$lCoincidenceMaps[[iMap]][["mascotScore"]][iGene] <-max(lSpecies$lCoincidenceMaps[[iMap]][["map"]]$mascot[indices])
-#			}
-#		}
-#	}
-#	else
-#	{
-#		for (iGene in 1:length(lSpecies$genes))
-#		{
-#			indices <- which(lSpecies$map == iGene)
-#			
-#			for (iMap in 1:numMaps)
-#			{
-#				lSpecies$lCoincidenceMaps[[iMap]][["coincidenceScore"]][iGene] <- mean(lSpecies$lCoincidenceMaps[[iMap]][["map"]]$incidence[indices])
-#			}
-#		}		
-#	}
-#	return(lSpecies)
-#}
 
 ##   user  system elapsed 
 ##  28.03    0.05   28.08 
@@ -519,29 +408,6 @@ calculateScoresPerGene <- function(lSpecies, bIncludeMascot = FALSE)
 	return(lSpecies)
 }
 
-#calculateScores <- function(lSpecies, bIncludeMascot = FALSE)
-#{
-#	numMaps <- length(lSpecies$lCoincidenceMaps)
-#	
-#	for (iGene in 1:length(lSpecies$genes))
-#	{
-#		indices <- which(lSpecies$map == iGene)
-#		offset <- length(indices)
-#		cScores <- vector(mode = "double", length = (offset * numMaps))
-#		mScores <- vector(mode = "double", length = (offset * numMaps))
-#		iStart <- 1
-#		
-#		for (iMap in 1:numMaps)
-#		{
-#			cScores[iStart:(iStart+offset-1)] <- lSpecies$lCoincidenceMaps[[iMap]][["map"]]$incidence[indices]
-#			mScores[iStart:(iStart+offset-1)] <- lSpecies$lCoincidenceMaps[[iMap]][["map"]]$mascot[indices]
-#			iStart <- iStart + offset
-#		}
-#		lSpecies$lCoincidenceMaps[[1]][["coincidenceScore"]][iGene] <- mean(cScores[1:(iStart-1)])
-#		lSpecies$lCoincidenceMaps[[1]][["mascotScore"]][iGene] <- max(mScores[1:(iStart-1)])
-#	}
-#	return(lSpecies)
-#}
 
 plotGraphByGenotypePerChrom <- function(lSpecies, genotype, bMascot = FALSE)
 {
